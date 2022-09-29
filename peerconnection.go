@@ -1581,6 +1581,7 @@ func (pc *PeerConnection) handleIncomingSSRC(rtpStream io.Reader, ssrc SSRC) err
 			}
 
 			if rsid != "" {
+				pc.log.Infof("received rtx stream SSRC %d, rsid: %s, original track %s", ssrc, rsid, rid)
 				receiver.mu.Lock()
 				defer receiver.mu.Unlock()
 				return receiver.receiveForRtx(SSRC(0), rsid, streamInfo, readStream, interceptor, rtcpReadStream, rtcpInterceptor)
@@ -1628,6 +1629,7 @@ func (pc *PeerConnection) undeclaredMediaProcessor() {
 				pc.log.Warn(ErrSimulcastProbeOverflow.Error())
 				continue
 			}
+			pc.log.Infof("accept ssrc: %d", ssrc)
 
 			go func(rtpStream io.Reader, ssrc SSRC) {
 				pc.dtlsTransport.storeSimulcastStream(stream)

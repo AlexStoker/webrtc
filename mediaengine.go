@@ -399,10 +399,12 @@ func (m *MediaEngine) matchRemoteCodec(remoteCodec RTPCodecParameters, typ RTPCo
 			return codecMatchNone, err
 		}
 
+		var mainCodec RTPCodecParameters
 		aptMatch := codecMatchNone
 		for _, codec := range exactMatches {
 			if codec.PayloadType == PayloadType(payloadType) {
 				aptMatch = codecMatchExact
+				mainCodec = codec
 				break
 			}
 		}
@@ -411,6 +413,7 @@ func (m *MediaEngine) matchRemoteCodec(remoteCodec RTPCodecParameters, typ RTPCo
 			for _, codec := range partialMatches {
 				if codec.PayloadType == PayloadType(payloadType) {
 					aptMatch = codecMatchPartial
+					mainCodec = codec
 					break
 				}
 			}
@@ -420,8 +423,18 @@ func (m *MediaEngine) matchRemoteCodec(remoteCodec RTPCodecParameters, typ RTPCo
 			return codecMatchNone, nil // not an error, we just ignore this codec we don't support
 		}
 
+		var localCodec RTPCodecParameters
+		if c, matchType := codecParametersFuzzySearch(mainCodec, codecs); matchType == aptMatch {
+			localCodec = c
+		} else {
+			return codecMatchNone, nil // main codec doesn't match as aptCodec, ignore this codec
+		}
+
+		// replace the apt attribute in fmtp line since local and remote main codec may have different payload type
+		aptCodecCopy := remoteCodec
+		aptCodecCopy.SDPFmtpLine = strings.Replace(aptCodecCopy.SDPFmtpLine, fmt.Sprintf("apt=%s", apt), fmt.Sprintf("apt=%d", localCodec.PayloadType), 1)
 		// if apt's media codec is partial match, then apt codec must be partial match too
-		_, matchType := codecParametersFuzzySearch(remoteCodec, codecs)
+		_, matchType := codecParametersFuzzySearch(aptCodecCopy, codecs)
 		if matchType == codecMatchExact && aptMatch == codecMatchPartial {
 			matchType = codecMatchPartial
 		}

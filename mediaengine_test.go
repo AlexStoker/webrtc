@@ -305,12 +305,12 @@ a=rtpmap:96 VP8/90000
 o=- 4596489990601351948 2 IN IP4 127.0.0.1
 s=-
 t=0 0
-m=video 60323 UDP/TLS/RTP/SAVPF 94 96 97
-a=rtpmap:94 VP8/90000
+m=video 60323 UDP/TLS/RTP/SAVPF 120 96 124
+a=rtpmap:120 VP8/90000
 a=rtpmap:96 VP9/90000
 a=fmtp:96 profile-id=2
-a=rtpmap:97 rtx/90000
-a=fmtp:97 apt=96
+a=rtpmap:124 rtx/90000
+a=fmtp:124 apt=120
 `
 		m := MediaEngine{}
 		assert.NoError(t, m.RegisterCodec(RTPCodecParameters{
@@ -322,14 +322,14 @@ a=fmtp:97 apt=96
 			PayloadType:        96,
 		}, RTPCodecTypeVideo))
 		assert.NoError(t, m.RegisterCodec(RTPCodecParameters{
-			RTPCodecCapability: RTPCodecCapability{"video/rtx", 90000, 0, "apt=96", nil},
+			RTPCodecCapability: RTPCodecCapability{"video/rtx", 90000, 0, "apt=94", nil},
 			PayloadType:        97,
 		}, RTPCodecTypeVideo))
 		assert.NoError(t, m.updateFromRemoteDescription(mustParse(profileLevels)))
 
 		assert.True(t, m.negotiatedVideo)
 
-		_, _, err := m.getCodecByPayload(97)
+		_, _, err := m.getCodecByPayload(124)
 		assert.NoError(t, err)
 	})
 
