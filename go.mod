@@ -1,4 +1,4 @@
-module github.com/pion/webrtc/v4
+module github.com/AlexStoker/webrtc
 
 go 1.13
 
