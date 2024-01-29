@@ -1,4 +1,4 @@
-module github.com/AlexStoker/webrtc
+module github.com/AlexStoker/webrtc/v3
 
 go 1.13
 
